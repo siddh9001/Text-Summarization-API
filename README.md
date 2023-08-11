@@ -11,7 +11,7 @@ clone the repo
 open git bash inside that folder and run command
 
 ```bash
-git clone <repo-url>
+git clone <repo-url> ./
 ```
 
 ## 2. setting up pyhton enviroment
