@@ -67,3 +67,4 @@ python server.py
    (i): 2 requests per minute
    (ii): 5 requests per day
 2. Moderation API is also added in order to avoid input of explicit content
+3. You can increase the number request per minute to run all tests or you can run some test individually

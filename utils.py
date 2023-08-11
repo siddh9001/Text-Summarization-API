@@ -5,10 +5,10 @@ from setup import setup_data
 import openai
 
 openai.api_key = setup_data.get('OPENAI_API_KEY')
-if openai.api_key is not None:
-    print("api key found")
-else:
-    print("api key not found")
+# if openai.api_key is not None:
+#     print("api key found")
+# else:
+#     print("api key not found")
 
 def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0613"):
     """Return the number of tokens used by a list of messages."""
@@ -76,7 +76,7 @@ def create_rate_limit_middleware(req_per_min, req_per_day, rate_limit_window, us
             if daily_request_count[user_ip] > req_per_day:
                 return {"message": 'Daily requests limit exceeded'}, 429
             
-            print(user_request_data[user_ip], daily_request_count[user_ip])
+            print(user_request_data[user_ip], daily_request_count[user_ip]) 
 
             return func(*args, **kwargs)
         
@@ -96,13 +96,13 @@ def create_moderation_api_middleware(user_request_args):
                 )
                 output = response["results"][0]
                 if output["flagged"] == True:
-                    return {"message": "message contain some explicit content"}
+                    return {"error": "Bad Request", "message": "message contain some explicit content"}, 400
                 else:
                     print("no explicit content")
                     return func(*args, **kwargs)
             except Exception as e:
                 print(f"Err in moderation --> {e}")
-                return {"message": "Internal server error"}, 400
+                return {"error":"internal server error", "message": "some unexpected error occured. Please try again"}, 500
 
         return wrapper
     return middleware
@@ -119,7 +119,7 @@ def create_tokenlimiter_middleware(messages, user_request_args):
             if total_input_tokens <= 250:
                 return func(*args, **kwargs)
             else:
-                return {"message": "token limit exceeded(less than 200 words)"}
+                return {"error": "Bad Request", "message": "token limit exceeded(less than 200 words)"}, 400
         return wrapper
     return middleware
 

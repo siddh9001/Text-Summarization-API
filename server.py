@@ -6,10 +6,10 @@ from utils import create_rate_limit_middleware, create_moderation_api_middleware
 from datetime import timedelta
 
 openai.api_key = setup_data.get('OPENAI_API_KEY')
-if openai.api_key is not None:
-    print("api key found")
-else:
-    print("api key not found")
+# if openai.api_key is not None:
+#     print("api key found")
+# else:
+#     print("api key not found")
 
 app = Flask(__name__)
 api = Api(app)
@@ -53,20 +53,23 @@ def chat_completion_helper_function(messages):
 
 class SummarizationAPI(Resource):
     def get(self):
-        return {"text": "this is summrization api"}
+        return {"success": True, "text": "this is summrization api"}
     
     @rate_limit_middleware
     @create_tokenlimiter_middleware(messages=messages, user_request_args=request_post_args)
     @create_moderation_api_middleware(request_post_args)
     def post(self):
         args = request_post_args.parse_args()
+        if args["text_to_summarize"] == "":
+            return {"error": "Bad Request", "message": "input cannot be empty"}, 400
         messages[1]["content"] = args["text_to_summarize"]
         chat_response = chat_completion_helper_function(messages=messages)
-        return {"summarized_text": chat_response}
-        # return {"success":True}
+        print(chat_response)
+        return {"success": True, "message": chat_response}, 200
+        #return {"success": True}, 200
 
 
 api.add_resource(SummarizationAPI, "/summarize")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="127.0.0.1")
