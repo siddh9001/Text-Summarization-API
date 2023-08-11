@@ -50,10 +50,8 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo-0613"):
     num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
     return num_tokens
 
-user_request_data = {}
-daily_request_count = {}
 
-def create_rate_limit_middleware(req_per_min, req_per_day, rate_limit_window):
+def create_rate_limit_middleware(req_per_min, req_per_day, rate_limit_window, user_request_data, daily_request_count):
     def middleware(func):
         def wrapper(*args, **kwargs):
             user_ip = request.remote_addr
@@ -61,22 +59,25 @@ def create_rate_limit_middleware(req_per_min, req_per_day, rate_limit_window):
 
             if user_ip not in user_request_data:
                 user_request_data[user_ip] = [(now, 1)]
-                daily_request_count[user_ip] = 0
+                daily_request_count[user_ip] = 1
             else:
                 user_data = user_request_data[user_ip]
                 user_data = [data for data in user_data if now - data[0] <= rate_limit_window]
                 user_data.append((now, len(user_data) + 1))
                 user_request_data[user_ip] = user_data
-            print(user_request_data[user_ip])
+
+                if len(user_request_data[user_ip]) <= req_per_min:
+                    daily_request_count[user_ip] = daily_request_count[user_ip] + 1
+
             if len(user_request_data[user_ip]) > req_per_min:
                 user_request_data[user_ip].pop()
-                daily_request_count[user_ip] = daily_request_count[user_ip] + req_per_min
                 return {'message': 'Requests per minute limit exceeded'}, 429
             
-            # daily_request_count = sum(1 for data in user_request_data[user_ip] if (now - data[0]).days == 0)
             if daily_request_count[user_ip] > req_per_day:
                 return {"message": 'Daily requests limit exceeded'}, 429
             
+            print(user_request_data[user_ip], daily_request_count[user_ip])
+
             return func(*args, **kwargs)
         
         return wrapper
@@ -121,7 +122,4 @@ def create_tokenlimiter_middleware(messages, user_request_args):
                 return {"message": "token limit exceeded(less than 200 words)"}
         return wrapper
     return middleware
-
-def show_requests_count():
-    print(user_request_data)
 

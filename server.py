@@ -17,7 +17,8 @@ api = Api(app)
 request_post_args = reqparse.RequestParser()
 request_post_args.add_argument("text_to_summarize", type=str, help="the text that is to be summarized", required=True)
 
-
+user_request_data = {}
+daily_request_count = {}
 
 system_message = f"summarize the user message in less than 100 words"
 
@@ -27,12 +28,14 @@ REQUEST_PER_DAY = 5
 REQUEST_PER_MINUTE = 2
 RATE_LIMIT_WINDOW = timedelta(minutes=1)
 
-rate_limit_middleware = create_rate_limit_middleware(req_per_min=REQUEST_PER_MINUTE, req_per_day=REQUEST_PER_DAY, rate_limit_window=RATE_LIMIT_WINDOW)
+rate_limit_middleware = create_rate_limit_middleware(req_per_min=REQUEST_PER_MINUTE, req_per_day=REQUEST_PER_DAY, rate_limit_window=RATE_LIMIT_WINDOW, user_request_data=user_request_data, daily_request_count=daily_request_count)
 
 messages = [
     {"role" : "system", "content": system_message},
     {"role": "user", "content": None},
 ]
+
+
 
 def chat_completion_helper_function(messages):
     try:
