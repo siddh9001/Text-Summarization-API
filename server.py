@@ -54,13 +54,13 @@ class SummarizationAPI(Resource):
     
     @rate_limit_middleware
     @create_tokenlimiter_middleware(messages=messages, user_request_args=request_post_args)
-    # @create_moderation_api_middleware(request_post_args)
+    @create_moderation_api_middleware(request_post_args)
     def post(self):
         args = request_post_args.parse_args()
         messages[1]["content"] = args["text_to_summarize"]
-        # chat_response = chat_completion_helper_function(messages=messages)
-        # return {"summarized_text": chat_response}
-        return {"success":True}
+        chat_response = chat_completion_helper_function(messages=messages)
+        return {"summarized_text": chat_response}
+        # return {"success":True}
 
 
 api.add_resource(SummarizationAPI, "/summarize")

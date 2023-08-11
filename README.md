@@ -20,7 +20,7 @@ for setting up pyhton env run following command
 
 ```bash
 > python -m venv <virtaul-env-name>
-> <path-to-directory>\<virtaul-env-name>\Scripts\activate
+> <virtaul-env-name>\Scripts\activate
 ```
 
 ## 3. Intstalling all the required packages
